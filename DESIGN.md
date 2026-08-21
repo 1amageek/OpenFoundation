@@ -3,8 +3,9 @@
 ## Confirmed current facts
 
 - 固定対象の通常WASM Swift SDKには`Foundation`、`FoundationEssentials`、関連libraryがある。
-- 固定対象の通常WASM Swift SDKのFoundationには`String.LocalizationValue`、
-  `LocalizedStringResource`、`CustomLocalizedStringResourceConvertible`が存在しない。
+- 固定対象の通常WASM Swift SDKとWindows toolchainのFoundationには
+  `String.LocalizationValue`、`LocalizedStringResource`、
+  `CustomLocalizedStringResourceConvertible`が存在しない。
 - 同じSDK bundleのEmbedded WASM resource pathにはFoundation moduleがない。
 - 同じEmbedded WASM resource pathの`Swift.swiftmodule`には`AnyHashable`宣言があるが、型、
   initializer、`Equatable` conformanceは`@_unavailableInEmbedded`であり使用できない。
@@ -45,7 +46,7 @@ flowchart LR
     Mode -->|"false"| Umbrella["@_exported import Foundation"]
     Umbrella --> Toolchain["Pinned toolchain / Swift SDK libraries"]
     Umbrella --> Missing{"declaration missing<br/>from pinned SDK?"}
-    Missing -->|"regular WASM localized values"| Supplement["OpenFoundation value supplement"]
+    Missing -->|"regular WASM / Windows localized values"| Supplement["OpenFoundation value supplement"]
 
     Mode -->|"true"| Values["Portable value subset"]
     Values --> Stdlib["Swift standard library"]
@@ -71,7 +72,7 @@ flowchart LR
 | file `Data` read/write | toolchain Foundation | OpenFoundation API + selected Embedded file-system backend | file access is a platform capability, not a portable value dependency |
 | `CGFloat`, `CGPoint`, `CGSize`, `CGRect`, `CGRectEdge` | toolchain Foundation identity | OpenFoundation | one import boundary and architecture-correct scalar ABI |
 | `CGVector`, `CGAffineTransform`, `CGAffineTransformComponents` | toolchain Foundation identity where available; otherwise OpenFoundation | OpenFoundation | one portable CFCG value family without a renderer dependency |
-| `String.LocalizationValue`, `LocalizedStringResource` | toolchain Foundation where available; OpenFoundation on regular WASM where the fixed SDK lacks the declarations | not declared | AppIntents/SwiftUI resource metadata remains a value until the selected rendering boundary |
+| `String.LocalizationValue`, `LocalizedStringResource` | toolchain Foundation where available; OpenFoundation on regular WASM and Windows where the fixed SDK/toolchain lacks the declarations | not declared | AppIntents/SwiftUI resource metadata remains a value until the selected rendering boundary |
 | geometry operations, paths, contexts, colors, drawing | OpenCoreGraphics | OpenCoreGraphics | graphics behavior is separate from value identity |
 | `Bundle`, locale, calendar, formatter, JSON coding | toolchain Foundation | not declared | not required by the current Embedded execution path |
 

@@ -9,22 +9,24 @@ Embedded Swift it implements only an explicitly documented portable subset.
 
 | Swift mode | `OpenFoundation` behavior | Type identity | Foundation link |
 |---|---|---|---|
-| macOS / Linux / Windows | Re-exports the toolchain-provided `Foundation` module | Identical to toolchain Foundation | Yes |
+| macOS / Linux | Re-exports the toolchain-provided `Foundation` module | Identical to toolchain Foundation | Yes |
+| Windows | Re-exports the toolchain-provided `Foundation` module and supplements the localized-string value family missing from the pinned toolchain | Toolchain identity for existing declarations; OpenFoundation identity only for missing declarations | Yes |
 | Regular WASM | Re-exports the Swift SDK-provided `Foundation` module and supplements the localized-string value family missing from the pinned SDK | SDK identity for existing declarations; OpenFoundation identity only for missing declarations | Yes |
 | Embedded WASM | Provides the minimum required portable value implementations | OpenFoundation owns Foundation-compatible values; Swift types remain standard-library types | No |
 
 On regular Swift targets, OpenFoundation does not declare replacements for
 types already supplied by Foundation. It performs `@_exported import Foundation`,
-so full Swift targets, including Windows, use the official Foundation type
-identities and implementations unchanged. The pinned regular WASM SDK does not
+so full Swift targets use the official Foundation type identities and
+implementations unchanged where those declarations exist. The pinned regular
+WASM SDK and Windows toolchain do not
 declare `String.LocalizationValue`, `LocalizedStringResource`, or
 `CustomLocalizedStringResourceConvertible`; OpenFoundation supplies that value
-family only on WASI. It preserves keys, default values, interpolation
+family on those platforms. It preserves keys, default values, interpolation
 replacements, tables, locale metadata, bundle descriptions, equality, coding,
-and rendering through an explicit bundle. A WASI `.main` or `.forClass` bundle
-has no recoverable executable bundle and therefore renders the default value.
-Encoding `.forClass` fails explicitly because a decoded WASI process cannot
-restore `AnyClass` identity.
+and rendering through an explicit bundle. A supplemental `.main` or `.forClass`
+bundle with no recoverable resource location renders the default value. Encoding
+`.forClass` fails explicitly because the supplemental implementation cannot
+restore `AnyClass` identity after decoding.
 
 Embedded Swift does not import or link the Foundation module. The current
 portable surface contains the `Data`, `URL`, `Date`, and `TimeInterval` APIs
@@ -78,13 +80,13 @@ geometry-only graph selects neither the math nor the file-system backend.
 
 | Target | Role |
 |---|---|
-| `OpenFoundation` | Re-exports Foundation on full Swift, supplies declarations missing from the pinned regular WASM SDK, and supplies the Embedded portable value/API subset without depending on a concrete backend |
+| `OpenFoundation` | Re-exports Foundation on full Swift, supplies declarations missing from the pinned regular WASM SDK and Windows toolchain, and supplies the Embedded portable value/API subset without depending on a concrete backend |
 | `OpenFoundationEmbeddedMath` | Capability-specific implementation of the Embedded math hooks |
 | `OpenFoundationEmbeddedFileSystem` | Capability-specific implementation of the Embedded file read/write hooks |
 | `OpenFoundationToolchainIdentity` | Test helper that imports Foundation directly and verifies compile-time identity with the re-exported types |
 | `OpenFoundationTests` | Fixtures for the full Swift re-export and toolchain Foundation type identity, including `LocalizedStringResource` on Apple platforms |
 | `OpenFoundationGeometrySmoke` | Runtime fixture for CFCG values, scalar width, and Foundation independence on Native, WASM, and Embedded |
-| `OpenFoundationLocalizationSmoke` | Native and regular WASM runtime fixture for localized resource interpolation, coding, explicit `.atURL` table lookup with positional replacement, default rendering, and explicit class-bundle coding failure |
+| `OpenFoundationLocalizationSmoke` | Native, regular WASM, and Windows runtime fixture for localized resource interpolation, coding, explicit `.atURL` table lookup with positional replacement, default rendering, and explicit class-bundle coding failure where the supplement is selected |
 | `OpenFoundationEmbeddedMathSmoke` | Embedded compile, link, and runtime fixture that selects only the math backend |
 | `OpenFoundationEmbeddedFileSystemSmoke` | Embedded runtime fixture that selects only the file backend and checks URL, encoding, I/O, and failure contracts |
 
@@ -101,16 +103,15 @@ explicit URL because the pinned WASM Foundation traps when SwiftPM's generated
 `Bundle.module` accessor asks for `Bundle.main`:
 
 ```bash
-LOCALIZATION_PRODUCT_DIRECTORY="$(
-  TOOLCHAINS=org.swift.64202608141a xcrun swift build \
-    --swift-sdk swift-6.4.x-DEVELOPMENT-SNAPSHOT-2026-08-14-a_wasm \
-    --show-bin-path
-)"
 TOOLCHAINS=org.swift.64202608141a xcrun swift run \
   --swift-sdk swift-6.4.x-DEVELOPMENT-SNAPSHOT-2026-08-14-a_wasm \
   OpenFoundationLocalizationSmoke \
-  "$LOCALIZATION_PRODUCT_DIRECTORY/OpenFoundation_OpenFoundationLocalizationSmoke.bundle"
+  .build/out/Products/Debug-webassembly-wasm32/OpenFoundation_OpenFoundationLocalizationSmoke.bundle
 ```
+
+The bundle path remains relative to the package working directory because that
+directory is pre-opened by the WASI runner; a host absolute path is outside the
+guest file-system namespace.
 
 ## Status
 

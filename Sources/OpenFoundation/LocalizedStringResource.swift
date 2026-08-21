@@ -1,4 +1,4 @@
-#if os(WASI) && !hasFeature(Embedded)
+#if (os(WASI) || os(Windows)) && !hasFeature(Embedded)
 extension String {
     public struct LocalizationValue: Equatable, Codable, Sendable, ExpressibleByStringInterpolation {
         let pattern: String
@@ -208,7 +208,7 @@ public struct LocalizedStringResource:
                 type,
                 EncodingError.Context(
                     codingPath: encoder.codingPath,
-                    debugDescription: "WASI cannot restore an AnyClass bundle identity after decoding."
+                    debugDescription: "This platform cannot restore an AnyClass bundle identity after decoding."
                 )
             )
         case .atURL(let url):

@@ -19,7 +19,7 @@ private enum OpenFoundationLocalizationSmoke {
             throw LocalizationSmokeError.localizedValueMismatch
         }
 
-        #if os(WASI)
+        #if os(WASI) || os(Windows)
         guard CommandLine.arguments.count == 2 else {
             throw LocalizationSmokeError.missingBundlePath
         }
@@ -37,7 +37,7 @@ private enum OpenFoundationLocalizationSmoke {
             throw LocalizationSmokeError.bundleLocalizationMismatch(localizedValue)
         }
 
-        #if os(WASI)
+        #if os(WASI) || os(Windows)
         let classResource = LocalizedStringResource(
             "Class bundle",
             bundle: .forClass(LocalizationBundleMarker.self)
@@ -46,7 +46,8 @@ private enum OpenFoundationLocalizationSmoke {
             _ = try JSONEncoder().encode(classResource)
             throw LocalizationSmokeError.classBundleCodingUnexpectedlySucceeded
         } catch is EncodingError {
-            // The portable failure is intentional because WASI cannot restore AnyClass identity.
+            // The portable failure is intentional because this implementation
+            // cannot restore AnyClass identity after decoding.
         }
         #endif
 
