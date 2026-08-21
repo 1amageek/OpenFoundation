@@ -18,6 +18,19 @@ func valueTypesAreVisibleThroughOpenFoundation() {
 }
 
 @Test
+@available(macOS 13.0, iOS 16.0, tvOS 16.0, watchOS 9.0, *)
+func localizedStringResourcesAreVisibleThroughOpenFoundation() throws {
+    let resource: LocalizedStringResource = "OpenFoundation"
+    let foundationResource = roundTripToolchainFoundationLocalizedStringResource(resource)
+    let encoded = try JSONEncoder().encode(resource)
+    let decoded = try JSONDecoder().decode(LocalizedStringResource.self, from: encoded)
+
+    #expect(foundationResource == resource)
+    #expect(decoded == resource)
+    #expect(String(localized: resource) == "OpenFoundation")
+}
+
+@Test
 func fullSwiftReexportsToolchainFoundationGeometry() {
     let scalar: CGFloat = 3
     let point = CGPoint(x: 1, y: 2)

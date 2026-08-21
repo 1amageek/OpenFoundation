@@ -15,16 +15,18 @@
 | Item | Status | Completion evidence |
 |---|---|---|
 | `OpenFoundation` library product | verified except Windows | Native, normal WASM, and Embedded WASM geometry fixture compile/link/runtime |
-| full Swift Foundation re-export | verified except Windows | Native type-identity tests and normal WASM geometry fixture |
-| full Swift type-identity helper | verified except Windows | Native helper compilation and two type-identity tests |
+| full Swift Foundation re-export | verified except Windows | Native type-identity tests and normal WASM geometry/localization fixtures |
+| full Swift type-identity helper | verified except Windows | Three Native tests, including direct Foundation `LocalizedStringResource` round-trip |
+| regular WASM localized-string supplement | verified | fixed-SDK compile/link/runtime covers interpolation metadata, Codable round-trip, explicit `.atURL` table lookup with positional replacement, default rendering, and explicit `.forClass` coding failure |
 | Embedded Foundation-free branch | verified for documented subset | Embedded link-symbol audit and 307,745-byte release fixture contain no Foundation-family dependency; separate runtime fixtures cover values, math, URL, encoding, and file I/O |
 | backend-independent `OpenFoundation` target | verified | geometry-only expanded link graph selects neither Embedded capability backend |
 | `OpenFoundationEmbeddedMath` capability product | verified | fixed Embedded SDK compile/link/runtime; symbol graph contains math hooks and no file hooks |
 | `OpenFoundationEmbeddedFileSystem` capability product | verified | fixed Embedded SDK compile/link/runtime with explicit WASI `/tmp` preopen; symbol graph contains file hooks and no math hooks |
 | `OpenFoundationEmbeddedMathSmoke` executable target | verified | math success behavior passed on the fixed Embedded SDK |
 | `OpenFoundationEmbeddedFileSystemSmoke` executable target | verified | scalar-key metadata, five encodings, URL rejection/decoding, file round trips, and typed failures passed on the fixed Embedded SDK |
+| `OpenFoundationLocalizationSmoke` executable target | verified | Native and regular WASM localized resource behavior passed on the fixed SDK, including a processed `.strings` table |
 | OpenCoreGraphics dependency migration | verified | 980 Native tests plus normal and Embedded WASM target builds |
-| OpenWidgetKit dependency wiring | verified except Windows | 12 Native tests, Apple system-module compile fixture, and normal WASM target build |
+| OpenWidgetKit dependency wiring | verified except unpublished pin and Windows M7 | 97 Native tests, Apple/replacement API verification, and normal WASM API/compiler/behavior targets using the local localized-value supplement |
 | CFCG value family canonical ownership | verified | Native, normal WASM, and Embedded WASM geometry fixture compile/link/runtime |
 | OpenCoreGraphics direct re-export | verified | Native, normal WASM, and Embedded WASM target builds |
 | OpenCoreImage direct dependency and re-export | verified | exact-snapshot Native and normal WASM target builds |

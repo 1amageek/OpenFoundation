@@ -3,6 +3,8 @@
 ## Confirmed current facts
 
 - 固定対象の通常WASM Swift SDKには`Foundation`、`FoundationEssentials`、関連libraryがある。
+- 固定対象の通常WASM Swift SDKのFoundationには`String.LocalizationValue`、
+  `LocalizedStringResource`、`CustomLocalizedStringResourceConvertible`が存在しない。
 - 同じSDK bundleのEmbedded WASM resource pathにはFoundation moduleがない。
 - 同じEmbedded WASM resource pathの`Swift.swiftmodule`には`AnyHashable`宣言があるが、型、
   initializer、`Equatable` conformanceは`@_unavailableInEmbedded`であり使用できない。
@@ -21,7 +23,8 @@
 
 ## Required invariants
 
-1. full Swiftではtoolchain/SDK組み込みFoundationの型identityを変えない。
+1. full Swiftではtoolchain/SDK組み込みFoundationの既存型identityを変えない。固定SDKに宣言が存在しない
+   valueだけをOpenFoundationが同じimport境界で補完する。
 2. EmbeddedではFoundation、FoundationEssentials、FoundationInternationalizationをimport/linkしない。
 3. `swift-foundation`をSwiftPM dependencyとして追加しない。
 4. CFCG値型の宣言とworkspace-wide identityはOpenFoundationが所有し、OpenCoreGraphicsはgraphics
@@ -41,6 +44,8 @@ flowchart LR
     OF --> Mode{"hasFeature(Embedded)"}
     Mode -->|"false"| Umbrella["@_exported import Foundation"]
     Umbrella --> Toolchain["Pinned toolchain / Swift SDK libraries"]
+    Umbrella --> Missing{"declaration missing<br/>from pinned SDK?"}
+    Missing -->|"regular WASM localized values"| Supplement["OpenFoundation value supplement"]
 
     Mode -->|"true"| Values["Portable value subset"]
     Values --> Stdlib["Swift standard library"]
@@ -66,6 +71,7 @@ flowchart LR
 | file `Data` read/write | toolchain Foundation | OpenFoundation API + selected Embedded file-system backend | file access is a platform capability, not a portable value dependency |
 | `CGFloat`, `CGPoint`, `CGSize`, `CGRect`, `CGRectEdge` | toolchain Foundation identity | OpenFoundation | one import boundary and architecture-correct scalar ABI |
 | `CGVector`, `CGAffineTransform`, `CGAffineTransformComponents` | toolchain Foundation identity where available; otherwise OpenFoundation | OpenFoundation | one portable CFCG value family without a renderer dependency |
+| `String.LocalizationValue`, `LocalizedStringResource` | toolchain Foundation where available; OpenFoundation on regular WASM where the fixed SDK lacks the declarations | not declared | AppIntents/SwiftUI resource metadata remains a value until the selected rendering boundary |
 | geometry operations, paths, contexts, colors, drawing | OpenCoreGraphics | OpenCoreGraphics | graphics behavior is separate from value identity |
 | `Bundle`, locale, calendar, formatter, JSON coding | toolchain Foundation | not declared | not required by the current Embedded execution path |
 
@@ -142,6 +148,7 @@ same application + full Foundation-capable WASM SDK
 | string decode/encode | documented five encodings | `nil` |
 | URL construction | authorityなしのlocal absolute file URL、percent-encoded UTF-8 path、absolute serialized URL subset | file authority、raw query/fragment、invalid percent encodingは`nil` |
 | attributed text | immutable plain string | attributesは未完成markerで明示 |
+| regular WASM localized resource | literal/interpolation metadata、Codable、explicit `.atURL` table lookup、sequential/positional string replacement、default-value rendering | executable `.main`/`.forClass` bundle discovery is unavailable; `.forClass` encoding throws because class identity cannot be restored |
 
 同名型の存在だけでFoundation全体とのsemantic parityを主張しません。APIが未宣言の領域はprogress
 document、呼び出し可能だが部分的な領域はsourceの`FIXME(INCOMPLETE_IMPLEMENTATION)`で管理します。

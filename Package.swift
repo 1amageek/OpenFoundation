@@ -4,6 +4,7 @@ import PackageDescription
 
 let package = Package(
     name: "OpenFoundation",
+    defaultLocalization: "en",
     products: [
         .library(
             name: "OpenFoundation",
@@ -41,6 +42,12 @@ let package = Package(
             name: "OpenFoundationGeometrySmoke",
             dependencies: ["OpenFoundation"],
             path: "Tests/Runtime/OpenFoundationGeometrySmoke"
+        ),
+        .executableTarget(
+            name: "OpenFoundationLocalizationSmoke",
+            dependencies: ["OpenFoundation"],
+            path: "Tests/Runtime/OpenFoundationLocalizationSmoke",
+            resources: [.process("Resources")]
         ),
         .executableTarget(
             name: "OpenFoundationEmbeddedMathSmoke",
