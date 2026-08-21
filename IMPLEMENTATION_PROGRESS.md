@@ -26,7 +26,7 @@
 | `OpenFoundationEmbeddedFileSystemSmoke` executable target | verified | scalar-key metadata, five encodings, URL rejection/decoding, file round trips, and typed failures passed on the fixed Embedded SDK |
 | `OpenFoundationLocalizationSmoke` executable target | verified | Native and regular WASM localized resource behavior passed on the fixed SDK, including a processed `.strings` table |
 | OpenCoreGraphics dependency migration | verified | 980 Native tests plus normal and Embedded WASM target builds |
-| OpenWidgetKit dependency wiring | verified except unpublished pin and Windows M7 | 97 Native tests, Apple/replacement API verification, and normal WASM API/compiler/behavior targets using the local localized-value supplement |
+| OpenWidgetKit dependency wiring | consumer-owned verification | The localized-value supplement is published; exact remote-pin and Windows M7 evidence is tracked by OpenWidgetKit |
 | CFCG value family canonical ownership | verified | Native, normal WASM, and Embedded WASM geometry fixture compile/link/runtime |
 | OpenCoreGraphics direct re-export | verified | Native, normal WASM, and Embedded WASM target builds |
 | OpenCoreImage direct dependency and re-export | verified | exact-snapshot Native and normal WASM target builds |
